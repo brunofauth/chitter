@@ -12,18 +12,14 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
-
-# import recommonmark
-# from recommonmark.transform import AutoStructify
-
 
 # -- Project information -----------------------------------------------------
 
 project = 'iterchain'
 copyright = '2019, Evelyn-H'
 author = 'Evelyn-H'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -34,7 +30,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    # 'recommonmark',
     'm2r',
 ]
 
@@ -51,7 +46,6 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -63,7 +57,7 @@ html_sidebars = {
     '**': [
         'about.html',
         'localtoc.html',
-        # 'navigation.html',
+   # 'navigation.html',
         'relations.html',
         'searchbox.html',
         'donate.html',
@@ -71,7 +65,7 @@ html_sidebars = {
 }
 
 html_theme_options = {
-    # 'logo': 'logo.png',
+   # 'logo': 'logo.png',
     'github_user': 'Evelyn-H',
     'github_repo': 'iterchain',
     "github_banner": True,
@@ -81,17 +75,7 @@ html_theme_options = {
     "fixed_sidebar": True,
 }
 
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
-
-# def setup(app):
-#     app.add_config_value('recommonmark_config', {
-#             # 'url_resolver': lambda url: github_doc_root + url,
-#             'auto_toc_tree_section': 'Contents',
-#             'enable_eval_rst': True,
-#             }, True)
-#     app.add_transform(AutoStructify)
