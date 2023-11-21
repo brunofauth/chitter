@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chitter"
-version = "0.1.0"
+version = "0.1.1"
 description = "Fork of 'iterchain', Chitter allows you to chain iters."
 authors = ["Bruno Fauth <149593@upf.br>"]
 license = "GPLv3"
