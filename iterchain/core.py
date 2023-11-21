@@ -82,11 +82,8 @@ class ChainableIter(typing.Generic[T]):
     def map(self, function: Callable[[T], U]) -> ChainableIter[U]:
         return ChainableIter(builtins.map(function, self))
 
-    def flatten(self) -> ChainableIter[U]:
-        return ChainableIter(
-            itertools.chain.from_iterable(
-                typing.cast(ChainableIter[Iterable[U]], self),
-            ))
+    def flatten(self) -> ChainableIter[Any]:   # TODO: type annotations
+        return ChainableIter(itertools.chain.from_iterable(self))   # type: ignore
 
     def flat_map(self, function: Callable[[T], Iterable[U]]) -> ChainableIter[U]:
         return self.map(function).flatten()

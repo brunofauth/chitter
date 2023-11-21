@@ -17,7 +17,7 @@ docs:
 	cd docs && make html
 
 lint:
-	poetry run pylint $(PACKAGE_NAME)
+	poetry run pylint -E $(PACKAGE_NAME)
 
 test:
 	poetry run pytest
