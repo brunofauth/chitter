@@ -2,7 +2,7 @@
 name = "chitter"
 version = "0.1.0"
 description = "Fork of 'iterchain', Chitter allows you to chain iters."
-authors = ["Your Name <you@example.com>"]
+authors = ["Bruno Fauth <149593@upf.br>"]
 license = "GPLv3"
 readme = "README.md"
 
