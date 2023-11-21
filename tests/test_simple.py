@@ -1,12 +1,7 @@
-from iterchain.core import Iterator as iter # pylint: disable=redefined-builtin
+from chitter import ChainableIter
 
 
 def test():
     l = [1, 2, 3]
-    new_l = (iter(l)
-             .map(lambda x: x**2)
-             .to_list())
-
-    assert new_l == [1, 4, 9]
-
-    assert iter.range(2, -2, -1).to_list() == [2, 1, 0, -1]
+    assert ChainableIter(l).map(lambda x: x**2).to_list() == [1, 4, 9]
+    assert ChainableIter.range(2, -2, -1).to_list() == [2, 1, 0, -1]
