@@ -20,21 +20,24 @@ iterators](https://doc.rust-lang.org/std/iter/index.html), stuff from python's
 own standard library 
 ([itertools](https://docs.python.org/3/library/itertools.html)).
 
-***Everything below this line comes straight from `iterchain`'s docs, so keep 
-that in mind while reading...***
-
 ## Installation
 
-Make sure that you have `pip` installed and run:
-```
-pip install iterchain
-```
+With Poetry:
+
+    poetry add chitter
+
+With Pip:
+
+    pip install chitter
 
 For the development version:
-```
-git clone https://github.com/Evelyn-H/iterchain.git
-pip install -e iterchain
-```
+
+    git clone https://github.com/brunofauth/chitter.git
+    cd ./chitter/
+    poetry install
+
+***Everything below this line comes straight from `iterchain`'s docs, so keep 
+that in mind while reading...***
 
 ## Why would I need this?
 
