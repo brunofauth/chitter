@@ -1,202 +1,172 @@
-# import types
+from __future__ import annotations
+
 import builtins
+import collections
 import functools
 import itertools
+import typing
 
-# from typing import Any, Callable, Generator, Iterable, TypeVar, Union
-# T = TypeVar("T"); U = TypeVar("U")
+T = typing.TypeVar("T")
 
+if typing.TYPE_CHECKING:
+    from typing import Callable, Self, Protocol, Any, ParamSpec
+    from collections.abc import Iterable, Iterator, Sequence
 
-def chainable(func=None, *, returns_iterable=True):
-    """
-    Decorator that allows you to add your own custom chainable methods.
+    class SupportsLessThan(Protocol):
 
-    The wrapped function should take the an :class:`Iterator` instance as the first argument,
-    and should return an iterable object (does not have to be an :class:`Iterator` instance).
+        def __lt__(self, __other: Any) -> bool:
+            ...
 
-    The original function is not modified and can still be used as normal.
+    KeyFunc = Callable[[T], SupportsLessThan]
+    Predicate = Callable[[T], bool]
+    U = typing.TypeVar("U")
+    P = ParamSpec('P')
 
-    Args:
-        returns_iterable (bool): whether or not the wrapped function returns an iterable
-
-    Example:
-    ::
-
-        >>> @iterchain.chainable
-        >>> def plus(iterable, amount):
-        ...     return iterable.map(lambda x: x + amount)
-        ...
-        >>> iterchain([1, 2, 3]).plus(1).to_list()
-        [2, 3, 4]
-
-    """
-    def _chainable(func):
-        @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
-            result = func(self, *args, **kwargs)
-            if returns_iterable and not isinstance(result, Iterator):
-                return Iterator(result)
-            return result
-
-        if hasattr(Iterator, func.__name__):
-            raise AttributeError("Chainable method {} already exists.".format(func.__name__))
-        setattr(Iterator, func.__name__, wrapper)
-        return func
-
-    # to allow the decorator to be used with and without arguments
-    if func is None:
-        return _chainable
-    return _chainable(func)
-
-
-# simple QoL decorator to avoid repeated code.
-# all it does is wrap the return value into an Iterator instance if it isn't one already
-# def returns_iterator(func):
-#     @functools.wraps(func)
-#     def wrapper(*args, **kwargs):
-#         result = func(*args, **kwargs)
-#         if not isinstance(result, Iterator):
-#             return Iterator(result)
-#         return result
-#     return wrapper
 
 def magicify(func):
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        # make sure self is an `Iterator` in case it's called as a "static" function
-        if not isinstance(self, Iterator):
-            self = Iterator(self)
-        # make sure the output gets wrapped up as `Iterator` as well
+        # make sure self is an `ChainableIter` in case it's called as a "static" function
+        if not isinstance(self, ChainableIter):
+            self = ChainableIter(self)
+        # make sure the output gets wrapped up as `ChainableIter` as well
         result = func(self, *args, **kwargs)
-        if not isinstance(result, Iterator):
-            result = Iterator(result)
+        if not isinstance(result, ChainableIter):
+            result = ChainableIter(result)
         return result
+
     return wrapper
 
 
-class Iterator():
+class ChainableIter(typing.Generic[T]):
     """
     Wrapper class around python iterators
 
     After wrapping any iterable in this class it will have access to all the methods listed below.
-    These methods also return an `Iterator` instance to make them chainable.
-
-    ``<3``
+    These methods also return an `ChainableIter` instance to make them chainable.
     """
 
     # ==== BASICS ====
 
-    # TODO: duplicate the `sentinel` behaviour of the builtin
-    # (don't actually have to program it, just copy the args to builtins.iter(...))
-    def __init__(self, iterable):
-        try:
-            self._iterator = builtins.iter(iterable)
-        except TypeError:
-            raise ValueError("You must pass a valid iterable object")
+    def __init__(
+        self,
+        iterable: Iterable[T],
+    ) -> None:
+        self._iterator = builtins.iter(iterable)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[T]:
         return self
 
-    def __next__(self):
+    def __next__(self) -> T:
         return next(self._iterator)
 
-
-    # ==== TRANSFORMATIONS (Iterator -> Iterator) ====
+    # ==== TRANSFORMATIONS (ChainableIter -> ChainableIter) ====
 
     # TODO:
-    # reversed
-    # sorted
     # step_by
     # group_by (itertools)
 
-    def map(self, function) -> 'Iterator':
-        """
-        Applies a given function to all elements.
+    def sorted(self, *, key: KeyFunc[T] | None = None, reverse: bool = False) -> ChainableIter[T]:
+        """This method is not good performance-wise"""
+        return ChainableIter(sorted(
+            list(self),
+            key=key, # type: ignore
+            reverse=reverse,
+        ))
 
-        Args:
-            function: the function to be called on each element
-        """
-        return Iterator(builtins.map(function, self))
+    def reversed(self) -> ChainableIter[T]:
+        """This method is not good performance-wise"""
+        return ChainableIter(reversed(list(self)))
 
-    def flatten(self) -> 'Iterator':
-        return Iterator(itertools.chain.from_iterable(self))
+    def map(self, function: Callable[[T], U]) -> ChainableIter[U]:
+        return ChainableIter(builtins.map(function, self))
 
-    def flat_map(self, function) -> 'Iterator':
+    def flatten(self) -> ChainableIter[U]:
+        return ChainableIter(
+            itertools.chain.from_iterable(
+                typing.cast(ChainableIter[Iterable[U]], self),
+            ))
+
+    def flat_map(self, function: Callable[[T], Iterable[U]]) -> ChainableIter[U]:
         return self.map(function).flatten()
 
-    def star_map(self, function) -> 'Iterator':
-        return Iterator(itertools.starmap(function, self))
+    def star_map(self, function) -> ChainableIter[Any]:   # TODO: type annotations
+        return ChainableIter(itertools.starmap(function, self))   # type: ignore
 
-    def filter(self, function) -> 'Iterator':
-        return Iterator(builtins.filter(function, self))
+    def filter(self, predicate: Predicate | None = None) -> ChainableIter[T]:
+        return ChainableIter(builtins.filter(
+            function=predicate, # type: ignore
+            iterable=self,
+        ))
 
-    def filter_false(self, predicate=None) -> 'Iterator':
-        return Iterator(itertools.filterfalse(predicate, self))
+    def filter_false(self, predicate: Predicate[T] | None = None) -> ChainableIter[T]:
+        return ChainableIter(itertools.filterfalse(predicate, self))
 
-    def enumerate(self, start=0) -> 'Iterator':
-        return Iterator(builtins.enumerate(self, start))
+    def enumerate(self, start: int = 0) -> ChainableIter[tuple[int, T]]:
+        return ChainableIter(builtins.enumerate(self, start))
 
-    def slice(self, *args) -> 'Iterator':
-        return Iterator(itertools.islice(self, *args))
+    def zip(self, *others: Iterable[Any], strict: bool = False) -> ChainableIter[tuple[Any, ...]]:
+        return ChainableIter(builtins.zip(self, *others, strict=strict))
 
-    def take(self, n) -> 'Iterator':
-        return self.slice(0, n)
+    def zip_longest(
+        self,
+        *others: Iterable[Any],
+        fill_value: Any = None,
+    ) -> ChainableIter[tuple[Any, ...]]:
+        return ChainableIter(itertools.zip_longest(self, *others, fillvalue=fill_value))
 
-    def take_while(self, predicate) -> 'Iterator':
-        return Iterator(itertools.takewhile(predicate, self))
+    def slice(self, s: slice) -> ChainableIter[T]:
+        return ChainableIter(itertools.islice(self, s.start, s.stop, s.step))
 
-    def skip(self, n) -> 'Iterator':
+    def take(self, n: int) -> ChainableIter[T]:
+        return self.slice(slice(n))
+
+    def take_while(self, predicate: Predicate[T]) -> ChainableIter[T]:
+        return ChainableIter(itertools.takewhile(predicate, self))
+
+    def drop(self, n: int | None) -> Self:
+        "Advance the iterator n-steps ahead. If n is None, consume entirely."
+        if n is None:
+            collections.deque(self, maxlen=0)
+        else:
+            next(self.slice(slice(n, n)), None)
+        return self
+
+    def drop_while(self, predicate: Predicate[T]) -> ChainableIter[T]:
+        return ChainableIter(itertools.dropwhile(predicate, self))
+
+    def inspect(self, function: Callable[[T], None]) -> ChainableIter[T]:
         # FIXME: kind of a sloppy implementation
-        def _skip(iterable, n):
-            for _ in range(n):
-                try:
-                    next(self)
-                except StopIteration:
-                    return
-            for i in iterable:
-                yield i
-        return Iterator(_skip(self, n))
-
-    def drop(self, n) -> 'Iterator':
-        return self.skip(n)
-
-    def skip_while(self, predicate) -> 'Iterator':
-        return Iterator(itertools.dropwhile(predicate, self))
-
-    def drop_while(self, predicate) -> 'Iterator':
-        return self.skip_while(predicate)
-
-    def inspect(self, function) -> 'Iterator':
-        # FIXME: kind of a sloppy implementation
-        def _inspect(iterator, function):
+        def _inspect(iterator: Iterable[T], function: Callable[[T], None]) -> Iterable[T]:
             for i in iterator:
                 function(i)
                 yield i
-        return Iterator(_inspect(self, function))
 
-    def chain(self, *iterables) -> 'Iterator':
-        return Iterator(itertools.chain(self, *iterables))
+        return ChainableIter(_inspect(self, function))
 
-    def compress(self, selectors) -> 'Iterator':
-        return Iterator(itertools.compress(self, selectors))
+    def chain(self, *iterables: Iterable[T]) -> ChainableIter[T]:
+        return ChainableIter(itertools.chain(self, *iterables))
 
-    def product(self, *iterables, repeat=1) -> 'Iterator':
-        return Iterator(itertools.product(self, *iterables, repeat=repeat))
+    def compress(self, selectors: Iterable[object]) -> ChainableIter[T]:
+        return ChainableIter(itertools.compress(self, selectors))
 
-    def permutations(self, r=None) -> 'Iterator':
-        return Iterator(itertools.permutations(self, r=r))
+    def product(self, *iterables, repeat=1) -> 'ChainableIter':
+        return ChainableIter(itertools.product(self, *iterables, repeat=repeat))
 
-    def combinations(self, r) -> 'Iterator':
-        return Iterator(itertools.combinations(self, r))
+    def permutations(self, length: int | None = None) -> ChainableIter[tuple[T, ...]]:
+        return ChainableIter(itertools.permutations(self, r=length))
 
-    def combinations_with_replacement(self, r) -> 'Iterator':
-        return Iterator(itertools.combinations_with_replacement(self, r))
+    def combinations(self, length: int) -> ChainableIter[tuple[T, ...]]:
+        return ChainableIter(itertools.combinations(self, r=length))
 
-    def cycle(self) -> 'Iterator':
-        return Iterator(itertools.cycle(self))
+    def combinations_with_replacement(self, length: int) -> ChainableIter[tuple[T, ...]]:
+        return ChainableIter(itertools.combinations_with_replacement(self, r=length))
 
+    def cycle(self) -> ChainableIter[T]:
+        return ChainableIter(itertools.cycle(self))
 
-    # ==== TERMINATORS (Iterator -> object) ====
+    # ==== TERMINATORS (ChainableIter -> object) ====
 
     # TODO:
     # all
@@ -206,61 +176,60 @@ class Iterator():
     # product # conflicts with the cartesian/set product
     # length
 
-    # first
-    # last
-    # nth
-    # for_each
-    # partition
-    # find / position'
+    def first(self, default: Any = None) -> T | Any:
+        return next(self, default)
+
+    def nth(self, index: int) -> T | None:
+        return self.drop(index).first()
+
+    def last(self, default: Any = None) -> T | Any:
+        item = default
+        for item in self:
+            pass
+        return item
+
+    def for_each(self, func: Callable[[T], None]) -> None:
+        for item in self:
+            func(item)
+
+    def find(self, needle: T, default: Any = None) -> tuple[int, T] | Any:
+        return self.enumerate().drop_while(lambda item: item[1] != needle).first(default)
+
+    def tee(self, n: int) -> tuple[ChainableIter[T], ...]:
+        return tuple(ChainableIter(i) for i in itertools.tee(self, n))
+
+    def partition(self, predicate: Predicate[T]) -> tuple[ChainableIter[T], ChainableIter[T]]:
+        "Use a predicate to partition entries into false entries and true entries"
+        # partition(is_odd, range(10)) --> 0 2 4 6 8   and  1 3 5 7 9
+        t1, t2 = itertools.tee(self)
+        return ChainableIter(t1).filter_false(predicate), ChainableIter(t2).filter(predicate)
 
     def reduce(self, initial, function):
         return functools.reduce(function, self, initial)
 
-    def next(self):
-        return next(self)
+    def next(self, default: Any = None) -> T | Any:
+        return next(self, default)
 
-    def collect(self, constructor=None):
-        if constructor:
-            return constructor(self)
-        else:
-            # just use up the iterator but don't do anything with it
-            # could be useful if you somehow have side effects
-            # you wanna execute but don't need the results
-            for _ in self:
-                pass
-            return None
+    def collect(self, constructor: Callable[[Iterable[T]], Sequence[T]]) -> Sequence[T]:
+        return constructor(self)
 
-    def to_list(self) -> list:
-        """
-        Converts the Iterchain to a list
+    def to_list(self) -> list[T]:
+        return typing.cast(list[T], self.collect(list))
 
-        Returns:
-            new list containing all the elements in this Iterchain
-        """
-        return self.collect(list)
-
-
-    # ==== Generators (new Iterator) ====
+    # ==== Generators (new ChainableIter) ====
 
     # TODO:
     # successors (rust)
-    # zip (normal, strict, longest) / unzip
+    # unzip
 
     @classmethod
-    def range(cls, *args) -> 'Iterator':
-        """
-        Makes a new iterator that returns evenly spaced values. 
-        (similar to the ``range`` builtin)
-        """
-        return Iterator(range(*args))
+    def range(cls, *args) -> ChainableIter[int]:
+        return ChainableIter(range(*args))
 
     @classmethod
-    def count(cls, start=0, step=1) -> 'Iterator':
-        return Iterator(itertools.count(start, step))
+    def count(cls, start: int = 0, step: int = 1) -> ChainableIter[int]:
+        return ChainableIter(itertools.count(start, step))
 
     @classmethod
-    def repeat(cls, item, times=None) -> "Iterator":
-        if times:
-            return Iterator(itertools.repeat(item, times))
-        else:
-            return Iterator(itertools.repeat(item))
+    def repeat(cls, item: T, times: int | None = None) -> ChainableIter[T]:
+        return ChainableIter(itertools.repeat(item, times))   # type: ignore

@@ -3,25 +3,22 @@ PACKAGE_NAME=iterchain
 .PHONY: install dist publish docs lint lint-html tests
 
 install:
-	python setup.py install
+	poetry install
 
 dist:
 	make docs
-	python setup.py sdist bdist_wheel
+	poetry build --format=sdist
 
 publish:
 	make dist
-	twine upload dist/*
+	poetry run twine upload --repository pypi --skip-existing --verbose dist/*
 
 docs:
 	cd docs && make html
 
 lint:
-	pylint $(PACKAGE_NAME)
-
-# lint-html:
-# 	pylint --output-format=html $(PACKAGE_NAME) > pylint.html
+	poetry run pylint $(PACKAGE_NAME)
 
 test:
-	pytest
+	poetry run pytest
 	make lint
