@@ -43,4 +43,4 @@ Overview
 """
 
 # simplify public interface
-from .core import Iterator
+from .core import ChainableIter
