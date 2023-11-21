@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "typed-iterchain"
+name = "chitter"
 version = "0.1.0"
-description = ""
+description = "Fork of 'iterchain', Chitter allows you to chain iters."
 authors = ["Your Name <you@example.com>"]
-license = "MIT"
+license = "GPLv3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
