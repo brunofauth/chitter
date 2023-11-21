@@ -1,11 +1,11 @@
-PACKAGE_NAME=iterchain
+PACKAGE_NAME=chitter
 
-.PHONY: install dist publish docs lint lint-html tests
+.PHONY: install build publish docs lint test
 
 install:
 	poetry install
 
-dist:
+build:
 	make docs
 	poetry build --format=sdist
 
