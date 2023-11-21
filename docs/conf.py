@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'iterchain'
-copyright = '2019, Evelyn-H'
-author = 'Evelyn-H'
+project = 'chitter'
+copyright = '2023, brunofauth'
+author = 'Bruno Fauth'
 
 # -- General configuration ---------------------------------------------------
 
@@ -50,7 +50,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
+
 html_theme = 'alabaster'
 
 html_sidebars = {
@@ -66,12 +66,12 @@ html_sidebars = {
 
 html_theme_options = {
    # 'logo': 'logo.png',
-    'github_user': 'Evelyn-H',
-    'github_repo': 'iterchain',
+    'github_user': 'brunofauth',
+    'github_repo': 'chitter',
     "github_banner": True,
     "github_button": True,
     "github_type": "star",
-    "description": "Simple and ergonomic iterator chaining for Python",
+    "description": "My take on ergonomic iterator chaining for Python",
     "fixed_sidebar": True,
 }
 
