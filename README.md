@@ -36,8 +36,7 @@ For the development version:
     cd ./chitter/
     poetry install
 
-***Everything below this line comes straight from `iterchain`'s docs, so keep 
-that in mind while reading...***
+***Everything below this line comes straight from `iterchain`'s docs, so keep that in mind while reading...***
 
 ## Why would I need this?
 

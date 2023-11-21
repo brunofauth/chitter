@@ -1,4 +1,4 @@
-.. iterchain documentation master file, created by
+.. chitter documentation master file, created by
    sphinx-quickstart on Tue Apr  2 17:24:39 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -16,23 +16,14 @@
 API
 ---
 
-.. automodule:: iterchain
+.. automodule:: chitter
 
 |
-
-Generators
-``````````
-
-.. automodule:: iterchain.generators
-    :members:
-
 
 Iterators
 ``````````
 
-.. autofunction:: iterchain.chainable
-
-.. autoclass:: iterchain.Iterator
+.. autoclass:: chitter.ChainableIter
     :members:
     :undoc-members:
 
