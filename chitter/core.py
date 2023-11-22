@@ -201,7 +201,7 @@ class ChainableIter(typing.Generic[T]):
         t1, t2 = itertools.tee(self)
         return ChainableIter(t1).filter_false(predicate), ChainableIter(t2).filter(predicate)
 
-    def reduce(self, initial, function):
+    def reduce(self, initial: T, function: Callable[[T, T], T]) -> T:
         return functools.reduce(function, self, initial)
 
     def next(self, default: Any = None) -> T | Any:

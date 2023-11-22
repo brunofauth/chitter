@@ -1,45 +1,18 @@
 """
+Usage example:
 
-The :code:`iterchain` module is callable, this means we can do this:
-::
+    from chitter import ChainableIter
 
-    >>> import iterchain
-    >>> iterchain([1, 2, 3]).map(lambda x: x**2)
+    result: tuple[int, ...] = (
+        ChainableIter(range(100))
+            .map(lambda item: 2 * item)
+            .filter(lambda item: item % 4 == 0)
+            .cycle()
+            .take(100)
+            .collect(tuple)
+    )
 
-instead of:
-::
-
-    >>> import iterchain
-    >>> iterchain.Iterator([1, 2, 3]).map(lambda x: x**2)
-
-|
-
-Overview
-````````
-
-**Generators**
-  - :meth:`generators.count`
-  - :meth:`generators.repeat`
-  - ...
-
-
-**Chainable operations**
-  - :meth:`Iterator.map`
-  - :meth:`Iterator.flat_map`
-  - :meth:`Iterator.filter`
-  - ...
-
-**Reduction operators**
-  - :meth:`Iterator.reduce`
-  - :meth:`Iterator.all`
-  - :meth:`Iterator.sum`
-  - ...
-
-**Consumers / access operators**
-  - :meth:`Iterator.to_list`
-  - :meth:`Iterator.first`
-  - :meth:`Iterator.last`
-  - ...
+    print(result)
 """
 
 # simplify public interface
