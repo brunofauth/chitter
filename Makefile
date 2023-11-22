@@ -1,6 +1,6 @@
 PACKAGE_NAME=chitter
 
-.PHONY: install build publish docs lint test
+.PHONY: install build publish docs lint test edit
 
 install:
 	poetry install
@@ -22,3 +22,10 @@ lint:
 test:
 	poetry run pytest
 	make lint
+
+edit:
+	fish -c 'poetry run vim -p (find $(PACKAGE_NAME) -type f -name \*.py)'
+
+# bootstrap-docs:
+# 	mkdir docs
+# 	poetry run sphinx-apidoc -o docs chitter
