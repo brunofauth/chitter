@@ -163,28 +163,28 @@ class ChainableIter(typing.Generic[T]):
     def cycle(self) -> ChainableIter[T]:
         return ChainableIter(itertools.cycle(self))
 
-    def split_head(self, value: T) -> ChainableIter[ChainableIter[T]]:
+    def split_head(self, predicate: Predicate[T]) -> ChainableIter[ChainableIter[T]]:
         batch: list[T] = []
         for item in self:
-            if item == value:
+            if predicate(item):
                 yield ChainableIter(batch)
                 batch = []
             batch.append(item)
         yield ChainableIter(batch)
 
-    def split_tail(self, value: T) -> ChainableIter[ChainableIter[T]]:
+    def split_tail(self, predicate: Predicate[T]) -> ChainableIter[ChainableIter[T]]:
         batch: list[T] = []
         for item in self:
             batch.append(item)
-            if item == value:
+            if predicate(item):
                 yield ChainableIter(batch)
                 batch = []
         yield ChainableIter(batch)
 
-    def split(self, value: T) -> ChainableIter[ChainableIter[T]]:
+    def split(self, predicate: Predicate[T]) -> ChainableIter[ChainableIter[T]]:
         batch: list[T] = []
         for item in self:
-            if item == value:
+            if predicate(item):
                 yield ChainableIter(batch)
                 batch = []
             else:
