@@ -10,7 +10,7 @@ build:
 	poetry build --format=sdist
 
 publish:
-	make dist
+	make build
 	poetry run twine upload --repository pypi --skip-existing --verbose dist/*
 
 docs:
